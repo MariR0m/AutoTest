@@ -1,0 +1,15 @@
+import subprocess
+
+
+def subprocess_file(directory: str, find_name: str) -> bool:
+    result = subprocess.run(directory, shell=True, stdout=subprocess.PIPE, encoding='utf-8')
+    out = result.stdout
+    if result.returncode == 0:
+        if find_name in out:
+            return True
+        return False
+    return False
+
+
+if __name__ == '__main__':
+    print(subprocess_file('cat /etc/os-release', 'VERSION_CODENAME=jammy'))
