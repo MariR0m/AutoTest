@@ -1,5 +1,9 @@
 import subprocess
 import pytest
+import yaml
+
+with open('config.yaml') as f:
+    data = yaml.safe_load(f)
 
 
 def subprocess_file(command, text):
@@ -9,24 +13,33 @@ def subprocess_file(command, text):
         return True
     return False
 
-def test_step_1():
-    result_1 = subprocess_file(f"cd /home/mari/folder_in; touch file_1", "")
-    result_2 = subprocess_file(f"cd /home/mari/folder_in; touch file_2", "")
-    result_3 = subprocess_file(f"cd /home/mari/folder_in; touch file_3", "")
-    assert result_1 and result_2 and result_3, "test1 FAIL"
 
-def test_step_2():
-    result_1 = subprocess_file(f"cd /home/mari/folder_in; 7z a /home/mari/folder_out/arx_2", "")
-    assert result_1, "test2 FAIL"
+def get_out(cmd):
+    return subprocess.run(cmd,shell=True, stdout=subprocess.PIPE, encoding='utf-8').stdout
 
-def test_step_3():
-    result_1 = subprocess_file(f"cd /home/mari/folder_out; 7z l arx_2.7z", "")
-    print(result_1)
-    assert result_1, "test3 FAIL"
 
-def test_step_4():
-    result_1 = subprocess_file(f"cd /home/mari/folder_out; 7z x arx_2.7z -o/home/mari/folder_ex", "")
-    assert result_1, "test4 FAIL"
+@pytest.mark.usefixtures('make_folders', 'clear_folders', 'make_files', 'write_log')
+class TestSem:
+
+# def test_step_1():
+#     result_1 = subprocess_file(f"cd /home/mari/folder_in; touch file_1", "")
+#     result_2 = subprocess_file(f"cd /home/mari/folder_in; touch file_2", "")
+#     result_3 = subprocess_file(f"cd /home/mari/folder_in; touch file_3", "")
+#     assert result_1 and result_2 and result_3, "test1 FAIL"
+
+    def test_step_2(self):
+        result_1 = subprocess_file("cd {}; 7z a {}/arh_1".format(data.get("folder_in"), data.get("folder_out")), "")
+        assert result_1, "test2 FAIL"
+
+    def test_step_3(self):
+        result_1 = subprocess_file("cd {}; 7z l arh_1.7z".format(data.get("folder_out")), "")
+        print(result_1)
+        assert result_1, "test3 FAIL"
+
+    def test_step_4(self):
+        result_1 = subprocess_file("cd {}; 7z x arh_1.7z -o{}".format(data.get("folder_out"), data.get("folder_ex")), "")
+        assert result_1, "test4 FAIL"
+
 
 if __name__ == '__main__':
     pytest.main(["-vv"])
